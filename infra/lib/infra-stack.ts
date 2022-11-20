@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Stack, StackProps } from 'aws-cdk-lib';
+import { aws_elasticloadbalancingv2 as elbv2, aws_elasticloadbalancingv2_targets as elbv2_tg } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -152,6 +153,51 @@ export class InfraStack extends cdk.Stack {
       role: iam_role_for_ssm_for_vpc2,
       userData: multipartUserData_for_vpc2,
     });
+
+    // NLB
+    const nlb = new elbv2.NetworkLoadBalancer(this, 'nlb', {
+      vpc: vpc2,
+      internetFacing: false,
+      vpcSubnets: {
+        subnets: vpc2.privateSubnets
+      }
+    });
+
+    // NLB target group
+    const nlbListener = nlb.addListener("NlbHttpListener", {
+      port: 80,
+      protocol: elbv2.Protocol.TCP
+    });
+    nlbListener.addTargets("NlbTarget", {
+      port: 80,
+      targets: [
+        new elbv2_tg.InstanceTarget(ec2_instance_on_vpc2, 80)
+      ]
+    });
+
+    // sg setting for NLB
+    const ec2_instance_on_vpc2_sg = new ec2.SecurityGroup(this, 'ec2_instance_on_vpc2_sg', {
+      vpc: vpc2,
+      allowAllOutbound: true,
+    });
+    ec2_instance_on_vpc2_sg.connections.allowFrom(ec2.Peer.ipv4(vpc2.vpcCidrBlock), ec2.Port.tcp(80), 'Allow access from NLB')
+    ec2_instance_on_vpc2.addSecurityGroup(ec2_instance_on_vpc2_sg);
+    
+    // gen VPC Endpoint Service on VPC2
+    const vpc2_endpoint_service = new ec2.VpcEndpointService(this, 'EndpointService', {
+      vpcEndpointServiceLoadBalancers: [nlb],
+      acceptanceRequired: false, // true, // If you select 'true', you need to allow manually from AWS Management console.
+      // allowedPrincipals: [new iam.ArnPrincipal('arn:aws:iam::123456789012:root')] // needs to be set to search from the other aws account
+    });
+
+    // gen VPC Endpoint on VPC1
+    const vpc1_endpoint_to_access_ec2_on_vpc2 = new ec2.InterfaceVpcEndpoint(this, 'vpc1_endpoint_to_access_ec2_on_vpc2', {
+      vpc: vpc1,
+      service: new ec2.InterfaceVpcEndpointService(vpc2_endpoint_service.vpcEndpointServiceName, 80),
+      subnets: {
+        subnets: vpc1.privateSubnets
+      }
+    })
     
     //---
   }
