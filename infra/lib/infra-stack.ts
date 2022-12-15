@@ -21,7 +21,7 @@ export class InfraStack extends cdk.Stack {
       cidr: '10.0.0.0/16', // address range: 10.0.0.0 - 10.0.255.255
       natGateways: 1,
       //natGatewayProvider: ec2.NatProvider.instance({
-      //  instanceType: new InstanceType('t3.nano'),
+      //  instanceType: new InstanceType('t3a.nano'),
       //  machineImage: new NatInstanceImage(),
       //}),
       subnetConfiguration: [
@@ -43,7 +43,7 @@ export class InfraStack extends cdk.Stack {
       cidr: '10.1.0.0/16', // address range: 10.1.0.0 - 10.1.255.255
       natGateways: 1,
       //natGatewayProvider: ec2.NatProvider.instance({
-      //  instanceType: new InstanceType('t3.nano'),
+      //  instanceType: new InstanceType('t3a.nano'),
       //  machineImage: new NatInstanceImage(),
       //}),
       subnetConfiguration: [
@@ -104,7 +104,7 @@ export class InfraStack extends cdk.Stack {
     multipartUserData_for_vpc1.addPart(ec2.MultipartBody.fromUserData(cloud_config_for_vpc1, 'text/cloud-config; charset="utf8"'));
     
     const ec2_instance_on_vpc1 = new ec2.Instance(this, 'general_purpose_ec2_on_vpc1', {
-      instanceType: new ec2.InstanceType('t3.nano'), // 1 Core, 1 GB
+      instanceType: new ec2.InstanceType('t3a.nano'), // 1 Core, 1 GB
 //    machineImage: ec2.MachineImage.genericLinux({'us-west-2': 'ami-XXXXXXXXXXXXXXXXX'}),
       machineImage: new ec2.AmazonLinuxImage({
         generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
@@ -133,7 +133,7 @@ export class InfraStack extends cdk.Stack {
     multipartUserData_for_vpc2.addPart(ec2.MultipartBody.fromUserData(cloud_config_for_vpc2, 'text/cloud-config; charset="utf8"'));
     
     const ec2_instance_on_vpc2 = new ec2.Instance(this, 'general_purpose_ec2_on_vpc2', {
-      instanceType: new ec2.InstanceType('t3.nano'), // 1 Core, 1 GB
+      instanceType: new ec2.InstanceType('t3a.nano'), // 1 Core, 1 GB
 //    machineImage: ec2.MachineImage.genericLinux({'us-west-2': 'ami-XXXXXXXXXXXXXXXXX'}),
       machineImage: new ec2.AmazonLinuxImage({
         generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
