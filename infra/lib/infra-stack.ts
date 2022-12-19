@@ -160,7 +160,8 @@ export class InfraStack extends cdk.Stack {
       internetFacing: false,
       vpcSubnets: {
         subnets: vpc2.privateSubnets
-      }
+      },
+      crossZoneEnabled: true, // When the AZ ID is different, NLB does not send traffic to the target. Ref: [Cross-zone load balancing](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#cross-zone-load-balancing)
     });
 
     // NLB target group
